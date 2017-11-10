@@ -20,6 +20,17 @@ type Site struct {
 	Changed time.Time
 }
 
+type Vlan struct {
+	ID       int64
+	Name     string
+	Vlan     int16
+	Site     int64
+	SiteName string
+	Comment  sql.NullString
+	Created  time.Time
+	Changed  time.Time
+}
+
 func Open() (*dbs, error) {
 	var db dbs
 	var err error
@@ -47,14 +58,23 @@ func (db *dbs) InitiateDatabase() error {
 }
 
 func (db *dbs) InitiateSites() error {
-	tableName := "sites"
+	/*tableName := "sites"
 	id := "id INTEGER PRIMARY KEY ASC"
-	name := "name VARCHAR(255) NOT NULL"
+	name := "name VARCHAR(255) NOT NULL UNIQUE"
 	comment := "comment VARCHAR(255)"
 	created := "created TIMESTAMP NOT NULL"
 	changed := "changed TIMESTAMP"
 	query := `CREATE TABLE IF NOT EXISTS %s (%s, %s, %s, %s, %s)`
-	query = fmt.Sprintf(query, tableName, id, name, comment, created, changed)
+	*/
+	query := `CREATE TABLE IF NOT EXISTS sites (
+		id INTEGER PRIMARY KEY ASC,
+		name VARCHAR(255) NOT NULL,
+		comment TEXT,
+		created TIMESTAMP NOT NULL,
+		changed TIMESTAMP,
+		UNIQUE (name)
+	)`
+	//query = fmt.Sprintf(query, tableName, id, name, comment, created, changed)
 
 	_, err := db.db.Exec(query)
 
@@ -65,9 +85,9 @@ func (db *dbs) InitiateSites() error {
 }
 
 func (db *dbs) InitiateVLANS() error {
-	tableName := "VLANS"
+	tableName := "vlans"
 	id := "id INTEGER PRIMARY KEY ASC"
-	name := "name VARCHAR(255) NOT NULL"
+	name := "name VARCHAR(255)"
 	vlan := "vlan SMALLINT NOT NULL"
 	created := "created TIMESTAMP NOT NULL"
 	changed := "changed TIMSTAMP"
@@ -145,4 +165,51 @@ func (db *dbs) GetSites() ([]Site, error) {
 	}
 
 	return sites, nil
+}
+
+func (db *dbs) GetSiteID(site string) (int64, error) {
+	query := `SELECT id FROM sites WHERE name = ?`
+
+	stmt, err := db.db.Prepare(query)
+	if err != nil {
+		return 0, err
+	}
+
+	var siteID int64
+
+	err = stmt.QueryRow(site).Scan(&siteID)
+	if err != nil {
+		return 0, err
+	}
+
+	stmt.Close()
+
+	return siteID, nil
+}
+
+func (db *dbs) AddVLAN(vlan Vlan) error {
+
+	var err error
+
+	vlan.Site, err = db.GetSiteID(vlan.SiteName)
+	if err != nil {
+		return err
+	}
+
+	query := `INSERT INTO vlans (name, vlan, created, changed, site) VALUES (?, ?, current_timestamp, current_timestamp, ?)`
+
+	stmt, err := db.db.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(vlan.Name, vlan.Vlan, vlan.Site)
+	if err != nil {
+		return err
+	}
+
+	stmt.Close()
+
+	return nil
+
 }

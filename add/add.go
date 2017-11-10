@@ -4,6 +4,7 @@ import (
 	"github.com/mitchellh/cli"
 	"github.com/tuggan/planip/add/commands"
 	"github.com/tuggan/planip/add/site"
+	"github.com/tuggan/planip/add/vlan"
 )
 
 type AddCommand struct {
@@ -23,7 +24,7 @@ func (c *AddCommand) Run(args []string) int {
 			return &commands.AddDeviceCommand{Ui: c.Ui}, nil
 		},
 		"vlan": func() (cli.Command, error) {
-			return &commands.AddVLANCommand{Ui: c.Ui}, nil
+			return vlan.New(c.Ui), nil
 		},
 	}
 
@@ -33,6 +34,7 @@ func (c *AddCommand) Run(args []string) int {
 	} else {
 		return exitstatus
 	}
+
 }
 
 func (c *AddCommand) Help() string {
