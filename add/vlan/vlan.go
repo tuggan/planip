@@ -31,26 +31,31 @@ func (c *cmd) Run(args []string) int {
 
 	if vlanID < 0 || vlanID > 4095 {
 		c.Ui.Error("VLAN ID has to be a number between 0 and 4095")
+		return 2
 	}
 
 	sitename := args[1]
+	var name string
+	if len(args) > 2 {
+		name = args[2]
+	}
 
 	db, err := database.Open()
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed with message: %s", err))
-		return 1
+		return 3
 	}
 
 	err = db.Init()
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed with message: %s", err))
-		return 1
+		return 4
 	}
 
-	err = db.AddVLAN(database.Vlan{Vlan: int16(vlanID), SiteName: sitename})
+	err = db.AddVLAN(database.Vlan{Vlan: int16(vlanID), SiteName: sitename, Name: name})
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed with message: %s", err))
-		return 1
+		return 5
 	}
 
 	c.Ui.Output(fmt.Sprintf("Added vlan %d to site %s", vlanID, sitename))

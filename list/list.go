@@ -4,6 +4,7 @@ import (
 	"github.com/mitchellh/cli"
 	"github.com/tuggan/planip/list/commands"
 	"github.com/tuggan/planip/list/sites"
+	"github.com/tuggan/planip/list/vlans"
 )
 
 type ListCommand struct {
@@ -23,7 +24,7 @@ func (c *ListCommand) Run(args []string) int {
 			return &commands.ListDevicesCommand{Ui: c.Ui}, nil
 		},
 		"vlans": func() (cli.Command, error) {
-			return &commands.ListVlansCommand{Ui: c.Ui}, nil
+			return vlans.New(c.Ui), nil
 		},
 	}
 

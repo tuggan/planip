@@ -187,6 +187,30 @@ func (db *dbs) GetSiteID(site string) (int64, error) {
 	return siteID, nil
 }
 
+func (db *dbs) GetVLANS() ([]Vlan, error) {
+	query := `SELECT vlans.vlan, vlans.name, sites.name FROM vlans INNER JOIN sites ON vlans.site = sites.id`
+
+	rows, err := db.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	var vlan int16
+	var name string
+	var sitename string
+
+	var vlans []Vlan
+
+	for rows.Next() {
+		err = rows.Scan(&vlan, &name, &sitename)
+		if err != nil {
+			return nil, err
+		}
+		vlans = append(vlans, Vlan{Vlan: vlan, Name: name, SiteName: sitename})
+	}
+
+	return vlans, nil
+}
+
 func (db *dbs) AddVLAN(vlan Vlan) error {
 
 	var err error
