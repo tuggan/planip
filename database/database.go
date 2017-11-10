@@ -113,6 +113,11 @@ func (db *dbs) Init() error {
 	if err != nil {
 		return err
 	}
+
+	err = db.InitiateIPs()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
