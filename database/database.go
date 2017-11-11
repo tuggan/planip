@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type dbs struct {
+type DBS struct {
 	db *sql.DB
 }
 
@@ -31,8 +31,8 @@ type Vlan struct {
 	Changed  time.Time
 }
 
-func Open() (*dbs, error) {
-	var db dbs
+func Open() (*DBS, error) {
+	var db DBS
 	var err error
 	db.db, err = sql.Open("sqlite3", "./foo.db")
 	if err != nil {
@@ -41,12 +41,12 @@ func Open() (*dbs, error) {
 	return &db, nil
 }
 
-func (db *dbs) Close() error {
+func (db *DBS) Close() error {
 	db.db.Close()
 	return nil
 }
 
-func (db *dbs) InitiateDatabase() error {
+func (db *DBS) InitiateDatabase() error {
 	name := "planip"
 	query := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", name)
 	_, err := db.db.Exec(query)
@@ -57,7 +57,7 @@ func (db *dbs) InitiateDatabase() error {
 	return nil
 }
 
-func (db *dbs) InitiateSites() error {
+func (db *DBS) InitiateSites() error {
 	/*tableName := "sites"
 	id := "id INTEGER PRIMARY KEY ASC"
 	name := "name VARCHAR(255) NOT NULL UNIQUE"
@@ -84,7 +84,7 @@ func (db *dbs) InitiateSites() error {
 	return nil
 }
 
-func (db *dbs) InitiateVLANS() error {
+func (db *DBS) InitiateVLANS() error {
 	tableName := "vlans"
 	id := "id INTEGER PRIMARY KEY ASC"
 	name := "name VARCHAR(255)"
@@ -103,7 +103,7 @@ func (db *dbs) InitiateVLANS() error {
 	return nil
 }
 
-func (db *dbs) Init() error {
+func (db *DBS) Init() error {
 	err := db.InitiateSites()
 	if err != nil {
 		return err
@@ -121,7 +121,7 @@ func (db *dbs) Init() error {
 	return nil
 }
 
-func (db *dbs) AddSite(site string) error {
+func (db *DBS) AddSite(site string) error {
 	tableName := "sites"
 	//name := fmt.Sprintf("name=%s", site)
 	//created := "CURRENT_TIMESTAMP"
@@ -145,7 +145,7 @@ func (db *dbs) AddSite(site string) error {
 	return nil
 }
 
-func (db *dbs) GetSites() ([]Site, error) {
+func (db *DBS) GetSites() ([]Site, error) {
 	var sites []Site
 	tableName := "sites"
 
@@ -172,7 +172,7 @@ func (db *dbs) GetSites() ([]Site, error) {
 	return sites, nil
 }
 
-func (db *dbs) GetSiteID(site string) (int64, error) {
+func (db *DBS) GetSiteID(site string) (int64, error) {
 	query := `SELECT id FROM sites WHERE name = ?`
 
 	stmt, err := db.db.Prepare(query)
@@ -192,7 +192,7 @@ func (db *dbs) GetSiteID(site string) (int64, error) {
 	return siteID, nil
 }
 
-func (db *dbs) GetVLANS() ([]Vlan, error) {
+func (db *DBS) GetVLANS() ([]Vlan, error) {
 	query := `SELECT vlans.vlan, vlans.name, sites.name FROM vlans INNER JOIN sites ON vlans.site = sites.id`
 
 	rows, err := db.db.Query(query)
@@ -216,7 +216,7 @@ func (db *dbs) GetVLANS() ([]Vlan, error) {
 	return vlans, nil
 }
 
-func (db *dbs) AddVLAN(vlan Vlan) error {
+func (db *DBS) AddVLAN(vlan Vlan) error {
 
 	var err error
 

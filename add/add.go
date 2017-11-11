@@ -3,6 +3,7 @@ package add
 import (
 	"github.com/mitchellh/cli"
 	"github.com/tuggan/planip/add/commands"
+	"github.com/tuggan/planip/add/ip"
 	"github.com/tuggan/planip/add/site"
 	"github.com/tuggan/planip/add/vlan"
 )
@@ -25,6 +26,9 @@ func (c *AddCommand) Run(args []string) int {
 		},
 		"vlan": func() (cli.Command, error) {
 			return vlan.New(c.Ui), nil
+		},
+		"ip": func() (cli.Command, error) {
+			return ip.New(c.Ui), nil
 		},
 	}
 
