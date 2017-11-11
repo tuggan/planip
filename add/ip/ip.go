@@ -61,6 +61,7 @@ func (c *cmd) Run(args []string) int {
 	rest, nmask, err := parseNetmask(args[0])
 	if err != nil {
 		c.Ui.Error("Failed while parsing netmask")
+		c.Ui.Error(err.Error())
 		return 2
 	}
 

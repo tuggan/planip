@@ -1,6 +1,6 @@
 package database
 
-func (db *DBS) GetVLANID(site string) (int64, error) {
+func (db *DBS) GetVLANByName(site string) (int64, error) {
 	query := `SELECT id FROM vlans WHERE name = ?`
 
 	stmt, err := db.db.Prepare(query)
