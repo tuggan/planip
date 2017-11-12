@@ -20,17 +20,6 @@ type Site struct {
 	Changed time.Time
 }
 
-type Vlan struct {
-	ID       int64
-	Name     string
-	Vlan     int16
-	Site     int64
-	SiteName string
-	Comment  sql.NullString
-	Created  time.Time
-	Changed  time.Time
-}
-
 func Open() (*DBS, error) {
 	var db DBS
 	var err error
@@ -75,25 +64,6 @@ func (db *DBS) InitiateSites() error {
 		UNIQUE (name)
 	)`
 	//query = fmt.Sprintf(query, tableName, id, name, comment, created, changed)
-
-	_, err := db.db.Exec(query)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (db *DBS) InitiateVLANS() error {
-	tableName := "vlans"
-	id := "id INTEGER PRIMARY KEY ASC"
-	name := "name VARCHAR(255)"
-	vlan := "vlan SMALLINT NOT NULL"
-	created := "created TIMESTAMP NOT NULL"
-	changed := "changed TIMSTAMP"
-	site := "site INT NOT NULL, FOREIGN KEY (site) REFERENCES sites(id)"
-	query := `CREATE TABLE IF NOT EXISTS %s (%s, %s, %s, %s, %s, %s)`
-	query = fmt.Sprintf(query, tableName, id, name, vlan, created, changed, site)
 
 	_, err := db.db.Exec(query)
 
@@ -172,19 +142,19 @@ func (db *DBS) GetSites() ([]Site, error) {
 	return sites, nil
 }
 
-func (db *DBS) GetSiteID(site string) (int64, error) {
+func (db *DBS) GetSiteID(site string) (sql.NullInt64, error) {
 	query := `SELECT id FROM sites WHERE name = ?`
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
-		return 0, err
+		return sql.NullInt64{}, err
 	}
 
-	var siteID int64
+	var siteID sql.NullInt64
 
 	err = stmt.QueryRow(site).Scan(&siteID)
 	if err != nil {
-		return 0, err
+		return sql.NullInt64{}, err
 	}
 
 	stmt.Close()
@@ -199,9 +169,9 @@ func (db *DBS) GetVLANS() ([]Vlan, error) {
 	if err != nil {
 		return nil, err
 	}
-	var vlan int16
-	var name string
-	var sitename string
+	var vlan sql.NullInt64
+	var name sql.NullString
+	var sitename sql.NullString
 
 	var vlans []Vlan
 
@@ -216,11 +186,12 @@ func (db *DBS) GetVLANS() ([]Vlan, error) {
 	return vlans, nil
 }
 
+/*
 func (db *DBS) AddVLAN(vlan Vlan) error {
 
 	var err error
 
-	vlan.Site, err = db.GetSiteID(vlan.SiteName)
+	vlan.Site, err = db.GetSiteID(vlan.SiteName.Value())
 	if err != nil {
 		return err
 	}
@@ -242,3 +213,4 @@ func (db *DBS) AddVLAN(vlan Vlan) error {
 	return nil
 
 }
+*/

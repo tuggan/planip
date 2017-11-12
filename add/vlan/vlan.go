@@ -21,6 +21,7 @@ func (c *cmd) Run(args []string) int {
 	c.Ui.Output("Add VLAN here")
 	c.Ui.Output(fmt.Sprintf("%+v", args))
 	if len(args) < 2 {
+		c.Ui.Error("Atleast two arguments needed!")
 		return 1
 	}
 
@@ -30,7 +31,7 @@ func (c *cmd) Run(args []string) int {
 	}
 
 	if vlanID < 0 || vlanID > 4095 {
-		c.Ui.Error("VLAN ID has to be a number between 0 and 4095")
+		c.Ui.Error(fmt.Sprintf("VLAN ID %d is not between 0 and 4095", vlanID))
 		return 2
 	}
 
@@ -52,8 +53,28 @@ func (c *cmd) Run(args []string) int {
 		return 4
 	}
 
-	err = db.AddVLAN(database.Vlan{Vlan: int16(vlanID), SiteName: sitename, Name: name})
-	if err != nil {
+	q := db.NewVLANQuery()
+
+	if err = q.SetName(name); err != nil {
+		c.Ui.Error(err.Error())
+		return 6
+	}
+
+	if err = q.SetVLAN(vlanID); err != nil {
+		c.Ui.Error(err.Error())
+		return 7
+	}
+
+	if err = q.SetSiteName(sitename); err != nil {
+		c.Ui.Error(err.Error())
+		return 8
+	}
+
+	if err = q.PopulateSiteID(db); err != nil {
+		c.Ui.Error("Failed while setting site id with message: " + err.Error())
+	}
+
+	if err = q.Add(db); err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed with message: %s", err))
 		return 5
 	}
